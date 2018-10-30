@@ -1,0 +1,47 @@
+---
+title: "Capital One Project"
+author: "Jerry Liu"
+date: "October 2018"
+output: github_document
+---
+
+### Load libraries
+
+```{r load}
+library("tidyverse")
+```
+
+### Which start/stop stations are most popular?
+First, we load the data from the Wiki page that we scraped earlier in the r script. 
+
+```{r load-data}
+
+bikes <- read_csv("metro-bike-share-trip-data.csv")
+colnames(bikes)[colnames(bikes)=="Starting Station Latitude"] <- "slat"
+colnames(bikes)[colnames(bikes)=="Starting Station Longitude"] <- "slong"
+colnames(bikes)[colnames(bikes)=="Starting Station ID"] <- "ssid"
+colnames(bikes)[colnames(bikes)=="Ending Station ID"] <- "esid"
+colnames(bikes)[colnames(bikes)=="Duration"] <- "duration"
+MostFreqentStart = count(bikes, ssid) %>%
+  arrange(desc(n)) %>%
+  head(5) 
+names(MostFreqentStart) <- c("Starting Station ID", "Frequency")
+MostFreqentStart
+MostFreqentEnd = count(bikes, esid) %>%
+  arrange(desc(n)) %>%
+  head(5) 
+names(MostFreqentEnd) <- c("Ending Station ID", "Frequency")
+MostFreqentEnd
+names(MostFreqentStart) <- c("Starting Station ID", "Frequency")
+MostFreqentStart
+
+```
+
+### Question 2
+```{r graph-paygap}
+bikes = bikes %>%
+  filter(duration>1)
+mean(bikes$duration)
+1555.302
+```
+

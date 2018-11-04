@@ -5,44 +5,71 @@ October 2018
 
 ### Load libraries
 
-For this project, we'll be using the TidyVerse package to help with data analysis.
+``` r
+library("tidyverse")
+```
+
+    ## ── Attaching packages ────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
+
+    ## ✔ ggplot2 3.1.0     ✔ purrr   0.2.5
+    ## ✔ tibble  1.4.2     ✔ dplyr   0.7.7
+    ## ✔ tidyr   0.8.2     ✔ stringr 1.3.1
+    ## ✔ readr   1.1.1     ✔ forcats 0.3.0
+
+    ## Warning: package 'ggplot2' was built under R version 3.4.4
+
+    ## Warning: package 'tidyr' was built under R version 3.4.4
+
+    ## Warning: package 'purrr' was built under R version 3.4.4
+
+    ## Warning: package 'dplyr' was built under R version 3.4.4
+
+    ## Warning: package 'stringr' was built under R version 3.4.4
+
+    ## ── Conflicts ───────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ✖ dplyr::filter() masks stats::filter()
+    ## ✖ dplyr::lag()    masks stats::lag()
 
 ### Loading data
 
 First, we load the data in the bike data from the csv file and also rename some columns for easier use in later analysis.
 
-### Investigating how Bike Usage Changes over the Seasons
-
-Here we graph the number of bike uses each day. We can see that bike use is cyclical, with usage peaking in the summer and at its low points during the winter.
-
-![](Capital_One_Project_files/figure-markdown_github/days-1.png)
-
-### Types of Bike Users
-
-Here, we can see that most people using the bikes are monthly pass users, but there are still a decent amount of people using walk up.
-
 ``` r
-y = count(bikes, passholdertype)
-y
+bikes <- read_csv("metro-bike-share-trip-data.csv")
 ```
 
-    ## # A tibble: 4 x 2
-    ##   passholdertype     n
-    ##   <chr>          <int>
-    ## 1 Flex Pass       9517
-    ## 2 Monthly Pass   81304
-    ## 3 Staff Annual     382
-    ## 4 Walk-up        41224
+    ## Parsed with column specification:
+    ## cols(
+    ##   `Trip ID` = col_integer(),
+    ##   Duration = col_integer(),
+    ##   `Start Time` = col_datetime(format = ""),
+    ##   `End Time` = col_datetime(format = ""),
+    ##   `Starting Station ID` = col_integer(),
+    ##   `Starting Station Latitude` = col_double(),
+    ##   `Starting Station Longitude` = col_double(),
+    ##   `Ending Station ID` = col_integer(),
+    ##   `Ending Station Latitude` = col_double(),
+    ##   `Ending Station Longitude` = col_double(),
+    ##   `Bike ID` = col_integer(),
+    ##   `Plan Duration` = col_integer(),
+    ##   `Trip Route Category` = col_character(),
+    ##   `Passholder Type` = col_character(),
+    ##   `Starting Lat-Long` = col_character(),
+    ##   `Ending Lat-Long` = col_character()
+    ## )
 
 ``` r
-ggplot(y, aes(passholdertype, n)) + geom_col() 
+colnames(bikes)[colnames(bikes)=="Starting Station Latitude"] <- "slat"
+colnames(bikes)[colnames(bikes)=="Starting Station Longitude"] <- "slong"
+colnames(bikes)[colnames(bikes)=="Starting Station ID"] <- "ssid"
+colnames(bikes)[colnames(bikes)=="Ending Station ID"] <- "esid"
+colnames(bikes)[colnames(bikes)=="Duration"] <- "duration"
+colnames(bikes)[colnames(bikes)=="Passholder Type"] <- "passholdertype"
 ```
 
-![](Capital_One_Project_files/figure-markdown_github/passbikes-1.png)
+### Loading data
 
-### Investigating how usage of bikes changes
-
-This graph shows something very interesting, in that people using the bikes as walk-ups use them on average 2-3x longer than monthly or flex pass holders.
+First, we load the data in the bike data from the csv file and also rename some columns for easier use in later analysis.
 
 ``` r
 x = bikes %>%
@@ -63,6 +90,11 @@ Let's take a look at the most popular start/stop stations. In order to do this, 
 MostFreqentStart = count(bikes, ssid) %>%
   arrange(desc(n)) %>%
   head(5) 
+```
+
+    ## Warning: package 'bindrcpp' was built under R version 3.4.4
+
+``` r
 names(MostFreqentStart) <- c("Starting Station ID", "Frequency")
 MostFreqentEnd = count(bikes, esid) %>%
   arrange(desc(n)) %>%

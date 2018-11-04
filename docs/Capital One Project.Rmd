@@ -7,15 +7,18 @@ output: github_document
 
 ### Load libraries
 
-```{r load}
+For this project, we'll be using the TidyVerse package to help with data analysis.
+```{r load, echo=FALSE, results='hide',message=FALSE}
+options(warn=-1)
 library("tidyverse")
 ```
 
 
 ### Loading data
+
 First, we load the data in the bike data from the csv file and also rename some columns for easier use in later analysis.
 
-```{r load-data}
+```{r load-data, echo=FALSE, results='hide',message=FALSE}
 
 bikes <- read_csv("metro-bike-share-trip-data.csv")
 colnames(bikes)[colnames(bikes)=="Starting Station Latitude"] <- "slat"
@@ -23,12 +26,46 @@ colnames(bikes)[colnames(bikes)=="Starting Station Longitude"] <- "slong"
 colnames(bikes)[colnames(bikes)=="Starting Station ID"] <- "ssid"
 colnames(bikes)[colnames(bikes)=="Ending Station ID"] <- "esid"
 colnames(bikes)[colnames(bikes)=="Duration"] <- "duration"
+colnames(bikes)[colnames(bikes)=="Start Time"] <- "starttime"
 colnames(bikes)[colnames(bikes)=="Passholder Type"] <- "passholdertype"
 
 ```
 
-### Loading data
-First, we load the data in the bike data from the csv file and also rename some columns for easier use in later analysis.
+
+### Investigating how Bike Usage Changes over the Seasons
+
+Here we graph the number of bike uses each day. We can see that bike use is cyclical, with usage peaking in the summer and at its low points during the winter.
+
+```{r days, echo=FALSE, results='hide',message=FALSE}
+
+z = bikes
+z$day <- format(as.POSIXct(z$starttime), "%Y-%m-%d")
+z$day = as.POSIXct(z$day)
+z = z %>%
+  group_by(day) %>%
+  count(day)
+plot = ggplot(z, aes(day, n)) 
+plot = plot + 
+  labs(title="Distribution of Passholders using Bikes") + labs(x = "Day") + labs(y = "Count (# of uses)") + geom_point( color="blue")
+plot
+
+```
+
+### Types of Bike Users
+
+Here, we can see that most people using the bikes are monthly pass users, but there are still a decent amount of people using walk up.
+
+```{r passbikes}
+
+y = count(bikes, passholdertype)
+y
+ggplot(y, aes(passholdertype, n)) + geom_col() 
+
+```
+
+### Investigating how usage of bikes changes
+
+This graph shows something very interesting, in that people using the bikes as walk-ups use them on average 2-3x longer than monthly or flex pass holders.
 
 ```{r duration}
 x = bikes %>%
@@ -43,6 +80,7 @@ ggplot(x, aes(passholdertype, duration)) + geom_col() + labs(title="The average 
 ### What are the most popular start/stop stations?
 
 Let's take a look at the most popular start/stop stations. In order to do this, I first grouped by start and end station id's and then counted the number of occurences of those id's.
+
 ```{r startstop}
 MostFreqentStart = count(bikes, ssid) %>%
   arrange(desc(n)) %>%
@@ -59,6 +97,7 @@ MostFreqentStart
 ```
 
 ### What is the average distance traveled?
+
 ```{r avgdistance}
 bikes = bikes %>%
   filter(duration>1)
@@ -68,6 +107,7 @@ mean(bikes$duration)
 Here, we can see that the mean amount of time people spent on their bikes was 1555 seconds, which is about 26 minutes. If we assume these people were biking at a average pace of around 10mph, we can conclude that the average trip length was around 26/60*10 miles, or `4.3` miles.
 
 ### How many riders include bike sharing as a regular part of their commute?
+
 ```{r regcommute}
 RegCommute = count(bikes, passholdertype) %>%
   arrange(desc(n)) %>%
